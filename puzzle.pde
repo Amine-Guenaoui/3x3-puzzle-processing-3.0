@@ -1,5 +1,5 @@
 import java.util.*;
-Integer plan[] = {4,6,8,2,7,5,0,3,1};
+Integer plan[] = {4,6,8,2,7,5,0,3,1}; // ce plan va etre transforme en une matrice : le but d'utiliser un vecteur est de faire un SHUFFLE si on ve
 //Integer plan[]={2,4,3,5,6,0,1,8,7};
 int map[][];//matrix of positions
 int goal[][]={{1,2,3},{8,0,4},{7,6,5}};
@@ -10,45 +10,46 @@ int blocSizeX,
     buttonNextPoseX,
     buttonNextPoseY,
     buttonBackPoseX,
-    buttonBackPoseY;
+    buttonBackPoseY,
+    buttonInitPoseX,
+    buttonInitPoseY;
 int curPosx,
     curPosy;
 boolean goalReached,// if goal is reached 
-        moveStop; // to change position with a mouse 
+        moveStop;// to change position with a mouse 
 PImage Map;
-MapPosition Root;
-//A_tree A_star_tree; 
+MapPosition Root;// our root Node/State
 int visitedX,visitedY;// the position of the mouse in the map
 int step;
 LinkedList<MapPosition> Open;  
 LinkedList<MapPosition> Temp;  
-LinkedList<int[][]> Open_Map_Temp;  
-LinkedList<int[][]> Open_Map;  
-LinkedList<int[][]> Closed_Map_Temp;
-LinkedList<int[][]> Closed_Map;
 LinkedList<MapPosition> Path;
 LinkedList<MapPosition> Path2;
 LinkedList<MapPosition> Closed;  
 PImage back;  
 boolean path_reached=false;
-boolean x;      
+boolean found_goal;      
 void setup(){
     back = loadImage("retro.jpg");
     size(800,600);
-    back = back.get(back.width/2,0,width,height);
+    // the next variables values are DYNAMIC TO DIFFRENT RESOLUTIONS 
+    back = back.get(300,300,width,height);
     blocSizeX = (width-100)/4;
     blocSizeY = height/3;
-    buttonSizeX = (width-150)/3;
+    buttonSizeX = width/6;
     buttonSizeY = (height)/10;
-    buttonNextPoseX = width-99;
+    buttonNextPoseX = width-width/5;
     buttonNextPoseY = height-(height/2);
     buttonBackPoseX = buttonNextPoseX;
     buttonBackPoseY = buttonNextPoseY - buttonSizeY; 
+    buttonInitPoseX = buttonBackPoseX;
+    buttonInitPoseY = buttonBackPoseY - buttonSizeY; 
+    
     //randomise the map --------------
     //List<Integer> intList = Arrays.asList(plan); // put contents on inlist
     //Collections.shuffle(intList);//shuffle contents
     //intList.toArray(plan);// return results 
-    ////println(Arrays.toString(plan)); // show results 
+    //println(Arrays.toString(plan)); // show results 
     //Map = createImage(800,800,RGB); // create our image 
     map = new int[3][3];
     int k=0; // fill our matrice with contents 
@@ -70,13 +71,9 @@ void setup(){
     step = 0;
     Open =  new LinkedList<MapPosition>();  
     Temp =  new LinkedList<MapPosition>();  
-    Open_Map_Temp = new LinkedList<int[][]>();  
-    Open_Map =new LinkedList<int[][]>();  
-    Closed_Map =new LinkedList<int[][]>();
     Path  = new LinkedList<MapPosition>();
     Path2  = new LinkedList<MapPosition>();
     Closed =new LinkedList<MapPosition>();  
-    Closed_Map_Temp = new LinkedList<int[][]>();
     
     
     
@@ -84,84 +81,25 @@ void setup(){
     Root.showMap();
     println("Root == goal : ",Root.is_goal());
     println("constructing path ... A star");
-    Open.add(Root);
-    //Open.add(new MapPosition(Root.move_map(2),goal,30)); // right 
-    //Open.add(new MapPosition(Root.move_map(4),goal,Root.getLevel())); // up
-    //Open.add(new MapPosition(Root.move_map(4),goal,Root.getLevel())); // up
-    //Open.add(new MapPosition(map,goal,-9)); // up
-    //Collections.sort(Open,new Open_Sort());
-    //println("position de plus grand cout "+Open.indexOf(new MapPosition(Root.move_map(2),goal,0)));
-    //println("position de moin  cout "+Open.indexOf(new MapPosition(Root.move_map(4),goal,Root.getLevel())));
-    //println("position de raceine  "+Open.indexOf(new MapPosition(map,goal)));
-    //println("Open.constains Root map only = ",Open.contains(new MapPosition(map,goal,65)));
-    //println("Open.constains up move map only = ",Open.contains(new MapPosition(Root.move_map(4),goal,65)));
-    //println("Open.constains goal map only = ",Open.contains(new MapPosition(goal,goal,65)));
-    //MapPosition a = Open.remove();
-    //MapPosition b = Open.remove();
-    //MapPosition c = Open.remove();
-    //println("cout de a "+a.getCost());
-    //println("cout de b "+b.getCost());
-    //println("cout de c "+c.getCost());
+    Open.add(Root); // adding Root to OPEN
     
-    
-    //println(Root.is_goal());
-    //// test 
-    //println("size of Open = ",Open.size());
-    //int index = Open.indexOf(Root); 
-    //println("index of root = " ,index);
-    
-    //if(Root.can_move_left()){
-    //  MapPosition y = new MapPosition(Root.move_map(1),goal,300) ;
-    //  y.showMap();
-    //  y.cursorPose();
-    //  Open.add(y);
-    //}
-    //if(Root.can_move_up()){
-    //  MapPosition y = new MapPosition(Root.move_map(4),goal,300) ;
-    //  y.showMap();
-    //  y.cursorPose();
-    //  Open.add(y);
-    //}
-    
-    //MapPosition y = Open.remove();
-    //y.showMap();
-    
-    
-    
-    //if(Root.can_move_right()){
-    //println(Open.add(new MapPosition(Root.move_map(2),goal,Root.getLevel())));
-    //Collections.sort(Open,new Open_Sort());
-    //}
-    
-    //index = Open.indexOf(new MapPosition(Root.move_map(1),goal,2));
-    //MapPosition  x = Open.remove();//,y = Open.remove();
-    //println("cost of  x = " ,x.getCost());//,"cost of  y = " , y.getCost());
-    //x.showMap();
-    //x.cursorPose();
-    //y.showMap();
-    //MapPosition x = Open.get(index);
-    //index = Open.indexOf(new MapPosition(Root.move_map(1),goal,2));
-    //println("index of another elemnt = " ,index);
-   x =  A_star();
-  //A_star();  
-  //fillMap();
+    double debut = System.currentTimeMillis();   
+    found_goal =  A_star();
+    double fin = System.currentTimeMillis();
+    println("ALGORITHME execution TIME  : "+(debut+fin)/2);
+
 }
 
 void draw(){
-  background(back);
-  if(!x && !checkGoal()){
+  background(back);//show background image
+  if(!found_goal && !checkGoal()){
   fillMap();
-  positionChange();
-  //x =  A_star();
-  
-  }else if(x & !checkGoal() ){
-  positionChange();
+  //positionChange();
+  }else if(found_goal & !checkGoal() ){
+  //positionChange(); // to use the mouse
   fillMap();  
-    
   }
-  else if (x & checkGoal() ){
-  //showButton();  
-
+  else if (found_goal & checkGoal() ){
   fillMap();  
   end();
   }
@@ -171,56 +109,59 @@ void draw(){
 
 }
 
-void mouseClicked() {
-  if (overRect(buttonNextPoseX, buttonNextPoseY,buttonSizeX,buttonSizeY) ) {
-    delay(1000/2);
-    
-    println("hover next");
-      if(!Path.isEmpty()){  
-        MapPosition path_node = Path.removeLast();
-        fillIntoGivenMap(path_node.getMap());
-        Path2.add(path_node);
-      }   
-  }
-  if (overRect(buttonBackPoseX,buttonBackPoseY ,buttonSizeX,buttonSizeY)) {
-      delay(1000/2);
-      println("hover back");
-      if(!Path2.isEmpty()){  
-        MapPosition path_node = Path2.removeLast();
-        fillIntoGivenMap(path_node.getMap());
-        Path.add(path_node);
-      }   
-  }
-  
-}
 
 void showButtons(){
- showButton("suivant",buttonNextPoseX,buttonNextPoseY ,buttonSizeX,buttonSizeY);
- showButton("retour",buttonBackPoseX,buttonBackPoseY ,buttonSizeX,buttonSizeY);
-
+ showButton("Suivant",buttonNextPoseX,buttonNextPoseY ,buttonSizeX,buttonSizeY);
+ showButton("Retour",buttonBackPoseX,buttonBackPoseY ,buttonSizeX,buttonSizeY);
+ showButton("Initialiser",buttonInitPoseX,buttonInitPoseY ,buttonSizeX,buttonSizeY);
+ showButton("But",buttonBackPoseX,buttonBackPoseY+buttonSizeY*2,buttonSizeX,buttonSizeY);
+ showNumber("Pas",Path2.size(),buttonBackPoseX,buttonBackPoseY-buttonSizeY*2);
+ showNumber("Faux",wrong_poses(),buttonBackPoseX,buttonBackPoseY-buttonSizeY*3);
+ 
 }
 
+int wrong_poses(){ // a function that calculates THE SUM of false positions 
+   int wrong = 0;
+   for(int i=0;i<goal.length ; i++){
+     for(int j=0;j<goal[i].length ; j++){
+        if(map[i][j]!=goal[i][j]){
+            wrong++;
+        }
+            
+     }
+    }
+  return wrong;
+}
+void showNumber(String text ,int number ,int poseX,int poseY){
 
+fill(255,255,255,100);
+rect(poseX-100,poseY-50,200,60);
+textSize(40);
+fill(0);
+text(number,poseX,poseY);
+text(text,poseX-100,poseY);
 
-
+}
 void showButton(String name,int posx, int posy , int w ,int h ){
  fill(255,255,255,100);
  //println("width = ",w);
- rect(posx,posy ,w,h,6, 6, 6, 6);
+ rect(posx,posy ,w,h);
  textSize(30);
  fill(0,0,0);
  text(name,posx,posy+h/2+10);
-
-  
 }
 
 boolean overRect(int x, int y, int width, int height)  {
+ boolean over=false;
+ if(mousePressed ){ 
   if (mouseX >= x && mouseX <= x+width && 
       mouseY >= y && mouseY <= y+height) {
-    return true;
+    over = true;
   } else {
-    return false;
+    over = false;
   }
+ }
+ return over;
 }
 
 void fillMap(){
@@ -244,7 +185,7 @@ void fillMap(){
 
 }
 
-void fillIntoGivenMap(int [][]map){
+void fillIntoGivenMap(int [][]map){ // to assign the given map into map/state  which will be shown to screen 
   
   for(int i=0 ; i<this.map.length ; i++){
         for(int j=0 ; j<this.map[i].length ; j++){       
@@ -254,8 +195,6 @@ void fillIntoGivenMap(int [][]map){
            //textSize(blocSizeX);
            this.map[j][i]=map[j][i];
            if(map[j][i]!=0)
-           text(map[j][i],blocSizeX*i,blocSizeY*j+blocSizeY);
-           
            //println(map[i][j]," " );
            if(map[i][j]==0){ // to save the cursor position 
             curPosx = i;
@@ -263,13 +202,6 @@ void fillIntoGivenMap(int [][]map){
            }           
         }
     }
-
-}
-
-void positionChange(){
-//println(mouseX ," ",mouseY);
-//mousePressed();
-mouseClicked();
 
 }
 
@@ -295,10 +227,10 @@ boolean checkGoal(){
 void end(){
   fill(255,0,0);
   textSize(width/8);
-  text("Goal Reached !",0,height/2);
+  text("SUCCESS !",0,height/2);
   
 }
-void mousePressed(){
+void mousePressed(){ // for All Mouse events 
   int rangeX1=blocSizeX,
       rangeX2=blocSizeX*2,
       rangeX3=blocSizeX*3;
@@ -326,15 +258,61 @@ void mousePressed(){
     visitedX=2;
   }
   if(mousePressed && moveStop){// once we click on a mouse button
-    println(visitedX," " , visitedY);      
+    //println(visitedX," " , visitedY);      
     if(visitedX != -1 && visitedY != -1){
-    println(map[visitedX][visitedY]);      
+    //println(map[visitedX][visitedY]);      
     move();
     }
   }
-      
-  
-
+  // next button function
+  if (overRect(buttonNextPoseX, buttonNextPoseY,buttonSizeX,buttonSizeY) ) {
+      //println("clicked next");
+          if(!Path.isEmpty()){  
+            
+            MapPosition path_node = Path.removeLast();
+            
+            fillIntoGivenMap(path_node.getMap());//afficher
+            
+            Path2.add(path_node);
+         
+      }
+    }
+    // back button function
+    if (overRect(buttonBackPoseX,buttonBackPoseY,buttonSizeX,buttonSizeY)) {
+        //println("clicked back");
+        if(!Path2.isEmpty()){
+          
+          MapPosition path_node = Path2.removeLast();
+          
+          fillIntoGivenMap(path_node.getMap());
+          
+          Path.add(path_node);
+        }   
+    }
+    // Init button function
+    if (overRect(buttonInitPoseX,buttonInitPoseY ,buttonSizeX,buttonSizeY)) {
+        //println("clicked initialize");
+        while(!Path2.isEmpty()){
+          
+          MapPosition path_node = Path2.removeLast();
+          
+          fillIntoGivenMap(path_node.getMap());
+          
+          Path.add(path_node);
+        }   
+    }
+    // goal button function
+    if (overRect(buttonBackPoseX,buttonBackPoseY+buttonSizeY*2,buttonSizeX,buttonSizeY)) {
+        //println("clicked goal");
+        while(!Path.isEmpty()){
+          
+          MapPosition path_node = Path.removeLast();
+          
+          fillIntoGivenMap(path_node.getMap());
+          
+          Path2.add(path_node);
+        }   
+    }
 }
 
 void move(){
@@ -356,24 +334,25 @@ void move(){
     targetX = visitedX;
     targetY = visitedY-1; 
   }
-  println("target is ",targetX," ",targetY);
+  //println("target is ",targetX," ",targetY);
   if(targetX <10 && targetY <10){
     int temp = map[visitedX][visitedY];
         map[visitedX][visitedY] = map[targetX][targetY];
         map[targetX][targetY]= temp;
-        println("pose changed ");
+        //println("pose changed ");
   }
 
 }
 
 boolean A_star(){
   
+
     while(!Open.isEmpty() && !path_reached  ){
     //if(!Open.isEmpty()){ 
             step++;
-            //println("---------------------------------------------");
-            //println("step = "+step);
-            //println("---------------------------------------------");
+            println("---------------------------------------------");
+            println("step = "+step);
+            println("---------------------------------------------");
             MapPosition X = Open.remove(); // remove return the shortest f(X) = H(X)+G(X)
             //println("---------------------------------------------");
             //println("OPEN size = ",Open.size(),"CLOSED size = ",Closed.size());
@@ -381,17 +360,19 @@ boolean A_star(){
             
             if(X.is_goal()){
                 //get path 
+                
                 MapPosition father=X.parent;
                 Path.add(X);
                 while(father != null) {
                 Path.add(father);
                 father=father.parent;    
                 }
+                println("number of movements : "+Path.size());
             return true;
             }
             X.setVisited();
             Closed.add(X);
-            //generating kids/children 
+            //generating kids/children
             MapPosition fils1  = null; //left
             MapPosition fils2  = null; //right
             MapPosition fils3  = null; //bottom
